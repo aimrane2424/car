@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Connexion Admin - AutoLocation</title>
+    <link rel="stylesheet" href="accueil.css">
+    <style>
+        .admin-login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 80vh;
+            padding: 20px;
+        }
+        
+        .login-box {
+            background: var(--primary-dark);
+            padding: 40px;
+            border-radius: var(--radius-l);
+            box-shadow: var(--shadow-tech);
+            width: 100%;
+            max-width: 400px;
+            border: 2px solid var(--accent-violet);
+        }
+        
+        .login-box h2 {
+            color: var(--accent-cyan);
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            color: var(--accent-cyan);
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--accent-violet);
+            background: #0d1018;
+            color: var(--text-main);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .message {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .message.success {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+        }
+        
+        .message.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        
+        .login-info {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-cyan);
+        }
+        
+        .login-info code {
+            background: rgba(0, 196, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div class="logo-name">
+                <h1>AutoLocation</h1>
+                <span>Espace Administrateur</span>
+            </div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="voiture_reservation.html">Réservation</a></li>
+                <li><a href="localisation.html">Localisation</a></li>
+                <li><a href="admin_login.html" class="active">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="admin-login-container">
+            <div class="login-box">
+                <h2>Connexion Administrateur</h2>
+                <form id="adminLoginForm">
+                    <div class="form-group">
+                        <label for="adminUsername">Nom d'utilisateur :</label>
+                        <input type="text" id="adminUsername" name="username" required 
+                               placeholder="Entrez votre nom d'admin" value="admin">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="adminPassword">Mot de passe :</label>
+                        <input type="password" id="adminPassword" name="password" required 
+                               placeholder="Entrez votre mot de passe" value="admin123">
+                    </div>
+                    
+                    <button type="submit" class="cta-btn" style="width: 100%;">
+                        Se connecter
+                    </button>
+                    
+                    <div class="login-info">
+                        <p><strong>Accès par défaut :</strong></p>
+                        <p>Utilisateur: <code>admin</code></p>
+                        <p>Mot de passe: <code>admin12</code></p>
+                    </div>
+                </form>
+                
+                <div id="loginMessage" class="message"></div>
+                
+                <div style="margin-top: 20px; text-align: center;">
+                    <p style="font-size: 0.9em; opacity: 0.7;">
+                        Si vous rencontrez des problèmes, vérifiez la console du navigateur (F12)
+                    </p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 AutoLocation | Accès réservé au personnel autorisé</p>
+    </footer>
+
+    <script>
+       
+    
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginForm = document.getElementById('adminLoginForm');
+            const messageDiv = document.getElementById('loginMessage');
+            
+            // Vérifier si déjà connecté
+            checkAdminLogin();
+            
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('adminUsername').value;
+                const password = document.getElementById('adminPassword').value;
+                
+                console.log('Tentative de connexion avec:', username); // Debug
+                
+                if (!username || !password) {
+                    showMessage('Veuillez remplir tous les champs', 'error');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch('/admin/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'include', // IMPORTANT pour les cookies de session
+                        body: JSON.stringify({
+                            username: username,
+                            password: password
+                        })
+                    });
+                    
+                    console.log('Réponse reçue:', response.status); // Debug
+                    
+                    const data = await response.json();
+                    console.log('Données:', data); // Debug
+                    
+                    if (data.success) {
+                        showMessage('✅ Connexion réussie ! Redirection...', 'success');
+                        
+                        // Attendre 1 seconde avant la redirection
+                        setTimeout(() => {
+                            window.location.href = 'admin_dashboard.html';
+                        }, 1000);
+                    } else {
+                        showMessage('❌ Erreur: ' + data.error, 'error');
+                    }
+                } catch (error) {
+                    console.error('Erreur de connexion:', error);
+                    showMessage('⚠️ Erreur de connexion au serveur', 'error');
+                }
+            });
+            
+            async function checkAdminLogin() {
+                try {
+                    const response = await fetch('/admin/check', {
+                        credentials: 'include'
+                    });
+                    const data = await response.json();
+                    
+                    console.log('Vérification connexion:', data); // Debug
+                    
+                    if (data.success && data.admin) {
+                        // Déjà connecté, rediriger
+                        window.location.href = 'admin_dashboard.html';
+                    }
+                } catch (error) {
+                    console.log('Non connecté ou erreur de vérification');
+                }
+            }
+            
+            function showMessage(message, type) {
+                messageDiv.textContent = message;
+                messageDiv.className = 'message ' + type;
+                messageDiv.style.display = 'block';
+                
+                if (type === 'error') {
+                    // Animation d'erreur
+                    const passwordField = document.getElementById('adminPassword');
+                    passwordField.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        passwordField.style.animation = '';
+                    }, 500);
+                }
+            }
+        });
+        function logout() {
+        fetch('/admin/logout')
+            .then(() => window.location.href = 'admin_login.html');
+    }
+    </script>
+    <script>
+// Ajuste la marge du main en fonction de la hauteur du header
+function adjustMainMargin() {
+  const header = document.querySelector('header');
+  const main = document.querySelector('main');
+  
+  if (header && main) {
+    const headerHeight = header.offsetHeight;
+    main.style.marginTop = (headerHeight + 20) + 'px';
+  }
+}
+
+// Exécuter au chargement et au redimensionnement
+window.addEventListener('load', adjustMainMargin);
+window.addEventListener('resize', adjustMainMargin);
+
+// Ajuster après le chargement des polices
+document.fonts.ready.then(adjustMainMargin);
+</script>
+</body>
+</html>

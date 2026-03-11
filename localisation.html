@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Localisation - Location de Voitures</title>
+    <link rel="stylesheet" href="accueil.css">
+</head>
+<body>
+    <header>
+        <div class="header-top">
+           
+            <div class="logo-name">
+                <h1>AutoLocation</h1>
+                <span>Retrouvez-nous facilement à Casablanca</span>
+            </div>
+            <div class="search-bar">
+    <input type="text" id="search-input" placeholder="Rechercher un modèle, prix..." autocomplete="off"/>
+    <button type="button" id="search-btn"><span>🔍</span></button>
+</div>
+
+<!-- نتائج البحث (مخفية فالبداية) -->
+<div id="search-results" class="search-results" style="display:none;"></div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="localisation.html" class="active">Localisation</a></li>
+                <li><a href="admin_login.html">Admin</a></li>
+                <li><a href="voiture_reservation.html">Réservation</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="contact-info">
+            <h2>Nos Coordonnées</h2>
+            <p><strong>Adresse :</strong> 123, Avenue des Voitures, Casablanca</p>
+            <p><strong>Téléphone :</strong> 06 00 00 00 00</p>
+            <p><strong>Email :</strong> contact@location.ma</p>
+            <h2>Où nous trouver ?</h2>
+            <div class="map-container">
+                <iframe src="https://www.google.com/maps?q=Casablanca&output=embed"></iframe>
+            </div>
+        </section>
+    </main>
+
+
+
+    <script>
+        const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const searchResults = document.getElementById('search-results');
+
+    function performSearch() {
+        const query = searchInput.value.trim().toLowerCase();
+        if (!query) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        fetch('/api/vehicles')
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success || data.vehicles.length === 0) {
+                    searchResults.innerHTML = '<div class="no-results">Aucune voiture trouvée.</div>';
+                    searchResults.style.display = 'block';
+                    return;
+                }
+
+                const filtered = data.vehicles.filter(car => 
+                    car.model.toLowerCase().includes(query) ||
+                    (car.description && car.description.toLowerCase().includes(query))
+                );
+
+                if (filtered.length === 0) {
+                    searchResults.innerHTML = '<div class="no-results">Aucun résultat pour "<strong>' + query + '</strong>"</div>';
+                } else {
+                    let html = '';
+                    filtered.forEach(car => {
+                        html += `
+                            <div class="search-result-item" onclick="window.location.href='voiture_reservation.html'">
+                                <h4>${car.model}</h4>
+                                <p>${car.description || 'Voiture confortable et économique'}</p>
+                                <p class="price">${car.price} DH / jour</p>
+                                <small style="color:var(--accent-cyan);">Cliquez pour réserver →</small>
+                            </div>
+                        `;
+                    });
+                    searchResults.innerHTML = html;
+                }
+                searchResults.style.display = 'block';
+            })
+            .catch(() => {
+                searchResults.innerHTML = '<div class="no-results">Erreur de recherche. Réessayez.</div>';
+                searchResults.style.display = 'block';
+            });
+    }
+
+    // بحث لما تضغط على الزر أو Enter
+    searchBtn.addEventListener('click', performSearch);
+    searchInput.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        } else if (searchInput.value.trim() === '') {
+            searchResults.style.display = 'none';
+        }
+    });
+
+    // إخفاء النتائج لما تضغط خارجها
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target) && !searchBtn.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+    </script>
+ <script>
+// Ajuste la marge du main en fonction de la hauteur du header
+function adjustMainMargin() {
+  const header = document.querySelector('header');
+  const main = document.querySelector('main');
+  
+  if (header && main) {
+    const headerHeight = header.offsetHeight;
+    main.style.marginTop = (headerHeight + 20) + 'px';
+  }
+}
+
+// Exécuter au chargement et au redimensionnement
+window.addEventListener('load', adjustMainMargin);
+window.addEventListener('resize', adjustMainMargin);
+
+// Ajuster après le chargement des polices
+document.fonts.ready.then(adjustMainMargin);
+</script>
+    <footer>
+        <p>&copy; 2025 AutoLocation | <a href="voiture_reservation.html">reservation-container</a></p>
+    </footer>
+</body>
+</html>

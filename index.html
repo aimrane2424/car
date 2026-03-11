@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Accueil - Location de Voitures</title>
+    <link rel="stylesheet" href="accueil.css">
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div class="logo-name">
+                <h1>AutoLocation</h1>
+                <span>Réservez la voiture de vos rêves !</span>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Rechercher un modèle, prix..." autocomplete="off"/>
+                <button type="button" id="search-btn"><span>🔍</span></button>
+            </div>
+            <div id="search-results" class="search-results" style="display:none;"></div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html" class="active">Accueil</a></li>
+                <li><a href="localisation.html">Localisation</a></li>
+                <li><a href="admin_login.html">Admin</a></li>
+                <li><a href="voiture_reservation.html">Réservation</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="cars-gallery">
+            <h2>Nos véhicules disponibles</h2>
+            <div class="gallery-grid" id="gallery-grid">
+                <p style="text-align:center; grid-column: 1 / -1; padding: 50px;">Chargement des véhicules...</p>
+            </div>
+        </section>
+
+        <script>
+            function loadVehiclesHome() {
+                fetch('/api/vehicles')
+                    .then(res => res.json())
+                    .then(data => {
+                        const grid = document.getElementById('gallery-grid');
+                        if (data.success && data.vehicles.length > 0) {
+                            grid.innerHTML = '';
+                            data.vehicles.forEach(car => {
+                                const div = document.createElement('div');
+                                div.className = 'car';
+                                div.innerHTML = `
+                                    <img src="${car.image || 'https://via.placeholder.com/300'}" alt="${car.model}">
+                                    <h3>${car.model}</h3>
+                                    <p>${car.description || 'Voiture fiable et économique'}</p>
+                                    <p class="price">${car.price} DH / jour</p>
+                                    <button class="btn" onclick="viewCarDetails('${car.model.replace(/'/g, "\\'")}', ${car.price})">
+                                        Voir détails et réserver
+                                    </button>
+                                `;
+                                grid.appendChild(div);
+                            });
+                        } else {
+                            grid.innerHTML = '<p style="text-align:center;">Aucune voiture disponible pour le moment.</p>';
+                        }
+                    })
+                    .catch(() => {
+                        grid.innerHTML = '<p style="color:red;">Erreur de chargement.</p>';
+                    });
+            }
+
+            // دالة لعرض تفاصيل السيارة والذهاب للحجز
+            function viewCarDetails(carModel, carPrice) {
+                // حفظ السيارة المقترحة في localStorage
+                localStorage.setItem('suggestedCar', JSON.stringify({
+                    model: carModel,
+                    price: carPrice,
+                    timestamp: new Date().getTime()
+                }));
+                
+                // الذهاب لصفحة الحجز
+                window.location.href = 'voiture_reservation.html';
+            }
+
+            document.addEventListener('DOMContentLoaded', loadVehiclesHome);
+        </script>
+
+        <section class="intro-section">
+            <h2>Réservez simplement votre voiture !</h2>
+            <p>Découvrez nos modèles, comparez les prix, et profitez d'un service client 24h/24.</p>
+            <a href="voiture_reservation.html" class="cta-btn">Commencer une réservation</a>
+        </section>
+
+        <section class="services-section">
+            <h2>Nos Services</h2>
+            <ul>
+                <li>Location de voitures pour toutes durées</li>
+                <li>Voitures récentes et bien entretenues</li>
+                <li>Assistance et dépannage inclus</li>
+                <li>Livraison à domicile ou à l'aéroport</li>
+            </ul>
+        </section>
+
+        <section class="avantages-section">
+            <h2>Pourquoi Nous Choisir ?</h2>
+            <ul>
+                <li>Tarifs transparents et avantageux</li>
+                <li>Large choix de modèles</li>
+                <li>Réservation 100% en ligne</li>
+                <li>Support rapide</li>
+            </ul>
+        </section>
+    </main>
+
+    <button id="chatbot-toggle">
+        <img src="logo.png" alt="Logo Chat" />
+    </button>
+    <div id="chatbot-container" style="display: none;">
+        <div id="chat-header">
+            <img src="logo.png" alt="Logo">
+            <span>Chatbot</span>
+            <button id="close-chatbot">×</button>
+        </div>
+        <div id="chat-messages"></div>
+        <div id="chat-input-bar">
+            <input type="text" id="chat-input" placeholder="Écrivez ici..."  >
+            <button id="voice-input-btn" title="Parler">🎤</button>
+           
+            <button id="send-btn" onclick="sendChatMessage()">Envoyer</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('chatbot-toggle').onclick = function () {
+            document.getElementById('chatbot-container').style.display = 'flex';
+            this.style.display = 'none';
+        };
+        document.getElementById('close-chatbot').onclick = function () {
+            document.getElementById('chatbot-container').style.display = 'none';
+            document.getElementById('chatbot-toggle').style.display = 'flex';
+        };
+        
+        const searchInput = document.getElementById('search-input');
+        const searchBtn = document.getElementById('search-btn');
+        const searchResults = document.getElementById('search-results');
+
+        function performSearch() {
+            const query = searchInput.value.trim().toLowerCase();
+            if (!query) {
+                searchResults.style.display = 'none';
+                return;
+            }
+
+            fetch('/api/vehicles')
+                .then(res => res.json())
+                .then(data => {
+                    if (!data.success || data.vehicles.length === 0) {
+                        searchResults.innerHTML = '<div class="no-results">Aucune voiture trouvée.</div>';
+                        searchResults.style.display = 'block';
+                        return;
+                    }
+
+                    const filtered = data.vehicles.filter(car => 
+                        car.model.toLowerCase().includes(query) ||
+                        (car.description && car.description.toLowerCase().includes(query))
+                    );
+
+                    if (filtered.length === 0) {
+                        searchResults.innerHTML = '<div class="no-results">Aucun résultat pour "<strong>' + query + '</strong>"</div>';
+                    } else {
+                        let html = '';
+                        filtered.forEach(car => {
+                            html += `
+                                <div class="search-result-item" onclick="viewCarDetails('${car.model.replace(/'/g, "\\'")}', ${car.price})">
+                                    <h4>${car.model}</h4>
+                                    <p>${car.description || 'Voiture confortable et économique'}</p>
+                                    <p class="price">${car.price} DH / jour</p>
+                                    <small style="color:var(--accent-cyan);">Cliquez pour voir détails →</small>
+                                </div>
+                            `;
+                        });
+                        searchResults.innerHTML = html;
+                    }
+                    searchResults.style.display = 'block';
+                })
+                .catch(() => {
+                    searchResults.innerHTML = '<div class="no-results">Erreur de recherche. Réessayez.</div>';
+                    searchResults.style.display = 'block';
+                });
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            } else if (searchInput.value.trim() === '') {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !searchResults.contains(e.target) && !searchBtn.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+    </script>
+
+    <footer>
+        <p>&copy; 2025 AutoLocation | <a href="voiture_reservation.html">Contact</a></p>
+    </footer>
+    <script src="chatbot.js"></script>
+</body>
+</html>

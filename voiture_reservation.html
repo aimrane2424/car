@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Réservation - AutoLocation</title>
+    <link rel="stylesheet" href="accueil.css">
+    <style>
+        .reservation-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .reservation-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .car-selection {
+            background: var(--primary-dark);
+            padding: 25px;
+            border-radius: var(--radius-l);
+            border: 1px solid rgba(0,196,255,0.2);
+        }
+        
+        .car-options {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .car-option {
+            background: rgba(20,28,45,0.8);
+            border-radius: 15px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        
+        .car-option:hover {
+            border-color: var(--accent-cyan);
+            transform: translateY(-5px);
+        }
+        
+        .car-option.selected {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0,196,255,0.4);
+            background: rgba(0,196,255,0.1);
+        }
+        
+        .car-option img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        
+        .car-info {
+            padding: 20px;
+        }
+        
+        .car-info h4 {
+            color: var(--accent-cyan);
+            margin: 0 0 10px 0;
+            font-size: 1.3em;
+        }
+        
+        .car-info p {
+            color: rgba(255,255,255,0.8);
+            margin: 5px 0;
+            font-size: 0.95em;
+        }
+        
+        .price-tag {
+            color: var(--accent-violet);
+            font-size: 1.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .select-car-btn {
+            background: var(--accent-violet);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+            font-size: 1em;
+        }
+        
+        .select-car-btn:hover {
+            background: var(--accent-cyan);
+            color: var(--primary-dark);
+        }
+        
+        .select-car-btn.selected {
+            background: var(--accent-cyan);
+            color: var(--primary-dark);
+            font-weight: bold;
+        }
+        
+        .reservation-form-section {
+            background: var(--primary-dark);
+            padding: 25px;
+            border-radius: var(--radius-l);
+            border: 1px solid rgba(108,92,231,0.2);
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            color: var(--accent-cyan);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--accent-violet);
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .form-group input:focus {
+            border-color: var(--accent-cyan);
+            outline: none;
+            box-shadow: 0 0 10px rgba(0,196,255,0.4);
+        }
+        
+        .reservation-summary {
+            background: rgba(0,196,255,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--accent-cyan);
+            margin: 25px 0;
+        }
+        
+        .reservation-summary h4 {
+            color: var(--accent-cyan);
+            margin: 0 0 15px 0;
+        }
+        
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .summary-label {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .summary-value {
+            color: white;
+            font-weight: bold;
+        }
+        
+        .summary-total {
+            color: var(--accent-violet);
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: right;
+            margin-top: 15px;
+        }
+        
+        #submit-btn {
+            background: linear-gradient(90deg, var(--accent-violet), var(--accent-cyan));
+            color: var(--primary-dark);
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        
+        #submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0,196,255,0.3);
+        }
+        
+        #submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .suggestion-message {
+            background: rgba(0,196,255,0.15);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 10px;
+            padding: 20px;
+            margin: 25px 0;
+            text-align: center;
+            color: var(--accent-cyan);
+            animation: fadeIn 0.5s;
+        }
+        
+        .selection-confirmation {
+            background: rgba(46,204,113,0.15);
+            border: 2px solid #2ecc71;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 20px 0;
+            text-align: center;
+            color: #2ecc71;
+            animation: slideIn 0.5s;
+        }
+        
+        .error-message {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #e74c3c;
+            display: none;
+        }
+        
+        .success-message {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border: 1px solid #2ecc71;
+            display: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--accent-cyan);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .instructions-box {
+            text-align: center;
+            padding: 20px;
+            background: rgba(108,92,231,0.1);
+            border-radius: 10px;
+            margin-bottom: 25px;
+            border: 1px solid var(--accent-violet);
+            color: var(--accent-cyan);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-top">
+            <div class="logo-name">
+                <h1>AutoLocation</h1>
+                <span>Réservez votre voiture en ligne</span>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Rechercher un modèle, prix..." autocomplete="off"/>
+                <button type="button" id="search-btn"><span>🔍</span></button>
+            </div>
+            <div id="search-results" class="search-results" style="display:none;"></div>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Accueil</a></li>
+                <li><a href="voiture_reservation.html" class="active">Réservation</a></li>
+                <li><a href="localisation.html">Localisation</a></li>
+                <li><a href="admin_login.html">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <h2 style="text-align:center; margin:40px 0; color: var(--accent-cyan);">
+            Réservez Votre Voiture
+        </h2>
+        
+        <!-- رسائل التنبيه -->
+        <div id="error-message" class="error-message"></div>
+        <div id="success-message" class="success-message"></div>
+        
+        <!-- رسالة الاقتراح (ستظهر إذا جاء من صفحة الرئيسية) -->
+        <div id="suggestion-container"></div>
+        
+        <!-- رسالة تأكيد الاختيار -->
+        <div id="selection-confirmation" class="selection-confirmation" style="display:none;"></div>
+        
+        <div class="reservation-container">
+            <!-- الجزء الأيسر: اختيار السيارة -->
+            <div class="car-selection">
+                <h3>Étape 1: Choisissez votre véhicule</h3>
+                <p style="color: rgba(255,255,255,0.7); margin-bottom: 20px;">
+                    Cliquez sur "Sélectionner" pour choisir la voiture que vous voulez louer
+                </p>
+                
+                <!-- صندوق التعليمات -->
+                <div class="instructions-box">
+                    <h4 style="margin: 0 0 10px 0;">👆 Comment réserver?</h4>
+                    <p style="margin: 0; color: rgba(255,255,255,0.8);">
+                        1. Regardez les voitures disponibles<br>
+                        2. Cliquez sur <strong>"Sélectionner"</strong> pour choisir<br>
+                        3. Remplissez le formulaire <br>
+                        4. Confirmez votre réservation
+                    </p>
+                </div>
+                
+                <!-- قائمة السيارات -->
+                <div class="car-options" id="car-options">
+                    <div class="loading">
+                        <p>⏳ Chargement des véhicules...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- الجزء الأيمن: نموذج الحجز -->
+            <div class="reservation-form-section">
+                <h3>Étape 2: Vos informations</h3>
+                
+                <form id="reservationForm">
+                    <input type="hidden" id="selectedCarId" name="selectedCarId">
+                    <input type="hidden" id="dailyPrice" name="dailyPrice">
+                    
+                    <div class="form-group">
+                        <label for="nom">Nom complet *</label>
+                        <input type="text" id="nom" name="nom" required placeholder="Votre nom et prénom">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required placeholder="votre@email.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="phone">Téléphone *</label>
+                        <input type="text" id="phone" name="phone" required placeholder="06 00 00 00 00">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="dateDebut">Date de début *</label>
+                            <input type="date" id="dateDebut" name="dateDebut" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="dateFin">Date de fin *</label>
+                            <input type="date" id="dateFin" name="dateFin" required>
+                        </div>
+                    </div>
+                    
+                    <!-- ملخص الحجز -->
+                    <div class="reservation-summary">
+                        <h4>📋 Récapitulatif de votre réservation</h4>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Véhicule:</span>
+                            <span class="summary-value" id="summary-car">Aucune sélection</span>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Période:</span>
+                            <span class="summary-value" id="summary-dates">-- / --</span>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Durée:</span>
+                            <span class="summary-value" id="summary-days">0 jour(s)</span>
+                        </div>
+                        
+                        <div class="summary-item">
+                            <span class="summary-label">Prix/jour:</span>
+                            <span class="summary-value" id="summary-price-day">0 DH</span>
+                        </div>
+                        
+                        <div class="summary-total" id="summary-total">Total: 0 DH</div>
+                    </div>
+                    
+                    <button type="submit" id="submit-btn" disabled>
+                        🚗 Confirmer la réservation
+                    </button>
+                    
+                    <p style="text-align: center; margin-top: 15px; color: rgba(255,255,255,0.5); font-size: 0.9em;">
+                        * Champs obligatoires
+                    </p>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ====== المتغيرات العامة ======
+        let selectedCar = null;
+        let selectedCarPrice = 0;
+        
+        // ====== التهيئة عند التحميل ======
+        document.addEventListener('DOMContentLoaded', function() {
+            // 1. تحميل السيارة المقترحة (إذا جاء من الصفحة الرئيسية)
+            loadSuggestedCar();
+            
+            // 2. تحميل السيارات
+            loadVehiclesForReservation();
+            
+            // 3. إعداد التواريخ
+            setupDates();
+            
+            // 4. إعداد مستمعات الأحداث
+            setupEventListeners();
+            
+            // 5. البحث
+            setupSearch();
+        });
+        
+        // ====== تحميل السيارة المقترحة ======
+        function loadSuggestedCar() {
+            const suggestedCarStr = localStorage.getItem('suggestedCar');
+            
+            if (suggestedCarStr) {
+                try {
+                    const suggestedCar = JSON.parse(suggestedCarStr);
+                    const now = new Date().getTime();
+                    const fiveMinutes = 5 * 60 * 1000;
+                    
+                    // تحقق إذا الاقتراح حديث (أقل من 5 دقائق)
+                    if (now - suggestedCar.timestamp < fiveMinutes) {
+                        showSuggestionMessage(suggestedCar.model, suggestedCar.price);
+                    }
+                    
+                    // تنظيف localStorage
+                    localStorage.removeItem('suggestedCar');
+                } catch (e) {
+                    console.log('No valid suggested car');
+                }
+            }
+        }
+        
+        // ====== عرض رسالة الاقتراح ======
+        function showSuggestionMessage(carModel, carPrice) {
+            const container = document.getElementById('suggestion-container');
+            container.innerHTML = `
+                <div class="suggestion-message">
+                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">
+                        🚗 Vous avez regardé: <strong>${carModel}</strong>
+                    </div>
+                    <div style="margin-bottom: 15px; color: rgba(255,255,255,0.9);">
+                        Prix: <strong style="color: var(--accent-violet);">${carPrice} DH/jour</strong>
+                    </div>
+                    <div style="color: rgba(255,255,255,0.7); font-size: 14px;">
+                        💡 <em>Cherchez cette voiture dans la liste et cliquez sur "Sélectionner"</em>
+                    </div>
+                </div>
+            `;
+            
+            // إزالة الرسالة بعد 15 ثانية
+            setTimeout(() => {
+                container.style.opacity = '0';
+                container.style.transition = 'opacity 1s';
+                setTimeout(() => {
+                    container.innerHTML = '';
+                    container.style.opacity = '1';
+                }, 1000);
+            }, 15000);
+        }
+        
+        // ====== تحميل السيارات ======
+        function loadVehiclesForReservation() {
+            const container = document.getElementById('car-options');
+            
+            fetch('/api/vehicles')
+                .then(response => {
+                    if (!response.ok) throw new Error('Erreur réseau');
+                    return response.json();
+                })
+                .then(data => {
+                    container.innerHTML = '';
+                    
+                    if (data.success && data.vehicles.length > 0) {
+                        data.vehicles.forEach(car => {
+                            const carDiv = document.createElement('div');
+                            carDiv.className = 'car-option';
+                            carDiv.dataset.carId = car.model;
+                            carDiv.dataset.carPrice = car.price;
+                            
+                            carDiv.innerHTML = `
+                                <img src="${car.image || 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=400&h=250&fit=crop'}" 
+                                     alt="${car.model}">
+                                <div class="car-info">
+                                    <h4>${car.model}</h4>
+                                    <p>${car.description || 'Voiture confortable et fiable'}</p>
+                                    <div class="price-tag">${car.price} DH/jour</div>
+                                    <button class="select-car-btn" 
+                                            onclick="selectCar('${car.model.replace(/'/g, "\\'")}', ${car.price}, this)">
+                                        Sélectionner cette voiture
+                                    </button>
+                                </div>
+                            `;
+                            
+                            container.appendChild(carDiv);
+                        });
+                    } else {
+                        container.innerHTML = `
+                            <div style="text-align: center; padding: 40px; color: #e74c3c; grid-column: 1/-1;">
+                                <p>⚠️ Aucune voiture disponible pour le moment.</p>
+                                <p style="font-size: 0.9em;">Veuillez réessayer plus tard.</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Erreur:', error);
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 40px; color: #e74c3c; grid-column: 1/-1;">
+                            <p>❌ Erreur de chargement des véhicules.</p>
+                            <button onclick="loadVehiclesForReservation()" 
+                                    style="background: var(--accent-cyan); color: black; 
+                                           padding: 10px 20px; border: none; border-radius: 5px; 
+                                           margin-top: 10px; cursor: pointer;">
+                                Réessayer
+                            </button>
+                        </div>
+                    `;
+                });
+        }
+        
+        // ====== اختيار السيارة ======
+        function selectCar(model, price, button) {
+            // إزالة التحديد من جميع السيارات
+            document.querySelectorAll('.car-option').forEach(car => {
+                car.classList.remove('selected');
+            });
+            
+            document.querySelectorAll('.select-car-btn').forEach(btn => {
+                btn.textContent = 'Sélectionner';
+                btn.classList.remove('selected');
+            });
+            
+            // تحديد السيارة الجديدة
+            const carDiv = button.closest('.car-option');
+            carDiv.classList.add('selected');
+            button.textContent = '✓ Vous avez choisi cette voiture';
+            button.classList.add('selected');
+            
+            // حفظ البيانات
+            selectedCar = model;
+            selectedCarPrice = price;
+            
+            // تحديث الحقول المخفية
+            document.getElementById('selectedCarId').value = model;
+            document.getElementById('dailyPrice').value = price;
+            
+            // تحديث الملخص
+            updateSummaryCar(model, price);
+            calculateTotal();
+            
+            // تفعيل زر التأكيد
+            document.getElementById('submit-btn').disabled = false;
+            
+            // عرض رسالة تأكيد
+            showSelectionConfirmation(model, price);
+        }
+        
+        // ====== تحديث ملخص السيارة ======
+        function updateSummaryCar(model, price) {
+            document.getElementById('summary-car').textContent = model;
+            document.getElementById('summary-price-day').textContent = price + ' DH';
+        }
+        
+        // ====== عرض تأكيد الاختيار ======
+        function showSelectionConfirmation(model, price) {
+            const container = document.getElementById('selection-confirmation');
+            container.innerHTML = `
+                <div style="font-weight: bold; margin-bottom: 5px;">
+                    ✅ Excellente choix!
+                </div>
+                <div>
+                    Vous avez sélectionné: <strong>${model}</strong> (${price} DH/jour)
+                </div>
+                <div style="font-size: 14px; margin-top: 8px; color: rgba(255,255,255,0.7);">
+                    Remplissez maintenant le formulaire ci-dessous
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+        
+        // ====== حساب الإجمالي ======
+        function calculateTotal() {
+            const startDate = document.getElementById('dateDebut').value;
+            const endDate = document.getElementById('dateFin').value;
+            
+            if (startDate && endDate && selectedCarPrice > 0) {
+                const start = new Date(startDate);
+                const end = new Date(endDate);
+                
+                if (end >= start) {
+                    const diffTime = Math.abs(end - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                    
+                    const total = diffDays * selectedCarPrice;
+                    
+                    // تحديث الملخص
+                    document.getElementById('summary-dates').textContent = 
+                        `${formatDate(startDate)} → ${formatDate(endDate)}`;
+                    document.getElementById('summary-days').textContent = 
+                        `${diffDays} jour(s)`;
+                    document.getElementById('summary-total').textContent = 
+                        `Total: ${total} DH`;
+                    
+                    return total;
+                }
+            }
+            
+            return 0;
+        }
+        
+        // ====== تنسيق التاريخ ======
+        function formatDate(dateStr) {
+            if (!dateStr) return '--';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('fr-FR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric'
+            });
+        }
+        
+        // ====== إعداد التواريخ ======
+        function setupDates() {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            document.getElementById('dateDebut').min = today.toISOString().split('T')[0];
+            document.getElementById('dateDebut').value = today.toISOString().split('T')[0];
+            document.getElementById('dateFin').min = today.toISOString().split('T')[0];
+            document.getElementById('dateFin').value = tomorrow.toISOString().split('T')[0];
+        }
+        
+        // ====== إعداد مستمعات الأحداث ======
+        function setupEventListeners() {
+            document.getElementById('dateDebut').addEventListener('change', function() {
+                document.getElementById('dateFin').min = this.value;
+                calculateTotal();
+            });
+            
+            document.getElementById('dateFin').addEventListener('change', calculateTotal);
+            
+            // إرسال النموذج
+            document.getElementById('reservationForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                // التحقق من البيانات
+                if (!selectedCar) {
+                    showError('Veuillez sélectionner une voiture');
+                    return;
+                }
+                
+                const nom = document.getElementById('nom').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const phone = document.getElementById('phone').value.trim();
+                const dateDebut = document.getElementById('dateDebut').value;
+                const dateFin = document.getElementById('dateFin').value;
+                
+                if (!nom || !email || !phone || !dateDebut || !dateFin) {
+                    showError('Veuillez remplir tous les champs obligatoires');
+                    return;
+                }
+                
+                const total = calculateTotal();
+                if (total <= 0) {
+                    showError('Veuillez sélectionner des dates valides');
+                    return;
+                }
+                
+                // إعداد البيانات
+                const formData = new FormData();
+                formData.append('nom', nom);
+                formData.append('email', email);
+                formData.append('phone', phone);
+                formData.append('selectedCar', selectedCar);
+                formData.append('dateDebut', dateDebut);
+                formData.append('dateFin', dateFin);
+                formData.append('prix_total', total);
+                
+                // عرض تحميل
+                const submitBtn = document.getElementById('submit-btn');
+                const originalText = submitBtn.textContent;
+                submitBtn.disabled = true;
+                submitBtn.textContent = '⏳ Traitement en cours...';
+                
+                try {
+                    // إرسال البيانات
+                    const response = await fetch('/api/reserve', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`Erreur serveur: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // ✅ النجاح - عرض صفحة التأكيد
+                        showConfirmationPage(selectedCar, selectedCarPrice, total, {
+                            nom: nom,
+                            email: email,
+                            phone: phone,
+                            dates: `${dateDebut} → ${dateFin}`
+                        });
+                        
+                    } else {
+                        // ❌ خطأ من السيرفر
+                        showError('❌ Erreur: ' + (data.error || 'Erreur inconnue'));
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = originalText;
+                    }
+                    
+                } catch (error) {
+                    // ❌ خطأ في الاتصال
+                    console.error('Erreur:', error);
+                    showError('❌ Erreur de connexion au serveur');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                }
+            });
+        }
+        
+        // ====== عرض صفحة التأكيد ======
+        function showConfirmationPage(carModel, carPrice, total, clientInfo) {
+            document.querySelector('main').innerHTML = `
+                <div style="max-width: 800px; margin: 60px auto; padding: 20px;">
+                    <!-- نجاح -->
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <div style="font-size: 80px; color: #2ecc71;">✅</div>
+                        <h1 style="color: var(--accent-cyan); margin: 20px 0 10px 0;">
+                            Réservation Confirmée!
+                        </h1>
+                        <p style="color: rgba(255,255,255,0.8);">
+                            Votre voiture a été réservée avec succès
+                        </p>
+                    </div>
+                    
+                    <!-- السيارة -->
+                    <div style="background: rgba(0,196,255,0.1); padding: 25px; border-radius: 15px;
+                         border: 2px solid var(--accent-cyan); margin-bottom: 30px;">
+                        
+                        <div style="display: flex; align-items: center; gap: 20px; flex-wrap: wrap;">
+                            <div style="background: linear-gradient(90deg, var(--accent-cyan), #00a8e6);
+                                 color: var(--primary-dark); padding: 10px 20px; border-radius: 20px;
+                                 font-weight: bold; margin-bottom: 15px;">
+                                🚗 VOITURE RÉSERVÉE
+                            </div>
+                            
+                            <div style="flex: 1;">
+                                <h2 style="color: white; margin: 0 0 10px 0;">${carModel}</h2>
+                                <div style="color: var(--accent-violet); font-size: 1.3em; font-weight: bold;">
+                                    ${carPrice} DH / jour
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- تفاصيل الحجز -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+                         gap: 20px; margin-bottom: 30px;">
+                        
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;">
+                            <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px;">
+                                👤 Client
+                            </div>
+                            <div style="color: white;">${clientInfo.nom}</div>
+                            <div style="color: rgba(255,255,255,0.7); font-size: 0.9em;">
+                                ${clientInfo.email}
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;">
+                            <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px;">
+                                📅 Période
+                            </div>
+                            <div style="color: white;">${clientInfo.dates}</div>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 10px;">
+                            <div style="color: var(--accent-cyan); font-weight: bold; margin-bottom: 10px;">
+                                📞 Contact
+                            </div>
+                            <div style="color: white;">${clientInfo.phone}</div>
+                        </div>
+                    </div>
+                    
+                    <!-- المبلغ -->
+                    <div style="background: linear-gradient(90deg, var(--accent-violet), var(--accent-cyan));
+                         color: white; padding: 25px; border-radius: 12px; text-align: center;
+                         font-size: 1.5em; font-weight: bold; margin: 30px 0;">
+                        💰 Montant total: ${total} DH
+                    </div>
+                    
+                    <!-- أزرار -->
+                    <div style="display: flex; gap: 20px; justify-content: center; margin-top: 40px; flex-wrap: wrap;">
+                        <button onclick="window.location.href='index.html'"
+                                style="background: var(--accent-cyan); color: black;
+                                       border: none; padding: 15px 30px; border-radius: 8px;
+                                       font-weight: bold; cursor: pointer; font-size: 1em;">
+                            🏠 Retour à l'accueil
+                        </button>
+                        
+                        <button onclick="window.location.href='voiture_reservation.html'"
+                                style="background: rgba(255,255,255,0.1); color: white;
+                                       border: 1px solid var(--accent-cyan); padding: 15px 30px;
+                                       border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1em;">
+                            🚗 Nouvelle réservation
+                        </button>
+                    </div>
+                    
+                    <!-- معلومات إضافية -->
+                    <div style="margin-top: 50px; padding: 20px; background: rgba(241,196,15,0.1);
+                         border-radius: 10px; border: 1px solid #f1c40f;">
+                        <h4 style="color: #f1c40f; margin: 0 0 15px 0;">📋 Prochaines étapes:</h4>
+                        <ul style="margin: 0; padding-left: 20px; color: rgba(255,255,255,0.8);">
+                            <li>Email de confirmation envoyé</li>
+                            <li>Contact de notre équipe sous 24h</li>
+                            <li>Présentez carte d'identité + permis</li>
+                            <li>Caution: 2000 DH (carte ou espèces)</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // ====== عرض الخطأ ======
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+        
+        // ====== إعداد البحث ======
+        function setupSearch() {
+            const searchInput = document.getElementById('search-input');
+            const searchBtn = document.getElementById('search-btn');
+            const searchResults = document.getElementById('search-results');
+            
+            function performSearch() {
+                const query = searchInput.value.trim().toLowerCase();
+                if (!query) {
+                    searchResults.style.display = 'none';
+                    return;
+                }
+                
+                fetch('/api/vehicles')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data.success || data.vehicles.length === 0) {
+                            searchResults.innerHTML = '<div class="no-results">Aucune voiture trouvée.</div>';
+                            searchResults.style.display = 'block';
+                            return;
+                        }
+                        
+                        const filtered = data.vehicles.filter(car => 
+                            car.model.toLowerCase().includes(query) ||
+                            (car.description && car.description.toLowerCase().includes(query))
+                        );
+                        
+                        if (filtered.length === 0) {
+                            searchResults.innerHTML = '<div class="no-results">Aucun résultat pour "<strong>' + query + '</strong>"</div>';
+                        } else {
+                            let html = '';
+                            filtered.forEach(car => {
+                                html += `
+                                    <div class="search-result-item" onclick="selectCarFromSearch('${car.model.replace(/'/g, "\\'")}', ${car.price})">
+                                        <h4>${car.model}</h4>
+                                        <p>${car.description || 'Voiture confortable et économique'}</p>
+                                        <p class="price">${car.price} DH / jour</p>
+                                        <small style="color:var(--accent-cyan);">Cliquez pour sélectionner →</small>
+                                    </div>
+                                `;
+                            });
+                            searchResults.innerHTML = html;
+                        }
+                        searchResults.style.display = 'block';
+                    })
+                    .catch(() => {
+                        searchResults.innerHTML = '<div class="no-results">Erreur de recherche. Réessayez.</div>';
+                        searchResults.style.display = 'block';
+                    });
+            }
+            
+            function selectCarFromSearch(model, price) {
+                const buttons = document.querySelectorAll('.select-car-btn');
+                buttons.forEach(button => {
+                    const carDiv = button.closest('.car-option');
+                    const carModel = carDiv.querySelector('h4').textContent;
+                    if (carModel === model) {
+                        selectCar(model, price, button);
+                        carDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        searchResults.style.display = 'none';
+                        searchInput.value = '';
+                    }
+                });
+            }
+            
+            searchBtn.addEventListener('click', performSearch);
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    performSearch();
+                } else if (searchInput.value.trim() === '') {
+                    searchResults.style.display = 'none';
+                }
+            });
+            
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchResults.contains(e.target) && !searchBtn.contains(e.target)) {
+                    searchResults.style.display = 'none';
+                }
+            });
+        }
+    </script>
+
+    <footer>
+        <p>&copy; 2025 AutoLocation | <a href="voiture_reservation.html" style="color: var(--accent-cyan);">reservation-container</a></p>
+    </footer>
+</body>
+</html>

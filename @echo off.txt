@@ -1,0 +1,40 @@
+@echo off
+echo ========================================
+echo        AutoLocation System
+echo ========================================
+echo.
+echo 📅 Date: %date%
+echo ⏰ Time: %time%
+echo.
+
+echo 🔄 التحقق من المكتبات...
+python -m pip install -r requirements.txt > nul 2>&1
+if errorlevel 1 (
+    echo ❌ مشكل في تثبيت المكتبات
+    pause
+    exit /b 1
+)
+echo ✅ المكتبات مثبتة
+
+echo.
+echo 🗃️ إعداد قاعدة البيانات...
+python reset_db.py
+
+echo.
+echo 🚀 تشغيل السيرفر...
+echo.
+echo ========================================
+echo 🌐 الموقع: http://localhost:5000
+echo 🔐 المسؤول: http://localhost:5000/admin_login.html
+echo 👤 المستخدم: admin
+echo 🔑 كلمة المرور: admin12
+echo ========================================
+echo.
+
+python main.py
+
+if errorlevel 1 (
+    echo.
+    echo ❌ مشكل في تشغيل السيرفر
+    pause
+)
